@@ -3,12 +3,17 @@ import pandas
 import random
 
 BACKGROUND_COLOR = "#B1DDC6"
-#----------------------------------------------------------------------------#
-#Acessar os dados e gerar um DataFrame
-data = pandas.read_csv("data/1000_palavras_espanhol_portugues.csv")
-#Usar DataFrame.to_dict(orient="records")
-to_learn = data.to_dict(orient="records")
 current_card = {}
+to_learn = {}
+#----------------------------------------------------------------------------#
+try:
+    data = pandas.read_csv("data/words_to_learn.csv")
+except FileNotFoundError:
+    original_data = pandas.read_csv("data/1000_palavras_espanhol_portugues.csv")
+    to_learn = original_data.to_dict(orient="records")
+else:
+    to_learn = data.to_dict(orient="records")
+
 
 def next_card():
     global current_card, flip_timer
@@ -25,7 +30,11 @@ def flip_card():
     canvas.itemconfig(card_word, text = current_card["Pt"], fill="white")
     canvas.itemconfig(card_background, image=card_back_img)
 
-
+def is_known():
+    to_learn.remove(current_card)
+    data = pandas.DataFrame(to_learn)
+    data.to_csv("data/words_to_learn", index=False)
+    next_card()
 
 
 # #-----------------------------------UI-----------------------------------------#
@@ -49,7 +58,7 @@ unknown_button = Button(image=x_image, highlightthickness=0, command=next_card)
 unknown_button.grid(column=0, row=1)
 
 check_image = PhotoImage(file="images/right.png")
-known_button = Button(image=check_image, highlightthickness=0,command=next_card)
+known_button = Button(image=check_image, highlightthickness=0,command=is_known)
 known_button.grid(column=1, row=1)
 
 next_card()
